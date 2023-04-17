@@ -1,42 +1,34 @@
--- Esta funcion no puede hacer uso de print en la consola del servidor
-local function OnClientCommand(module, command, player, args)
+if isClient() then
+    return;
+end
 
+local function PkcModData()
+    print("-----OnInitGlobalModData------")
+    if not ModData.exists("PKCData") then
+        print("Creating PKC ModData");
+        local t = ModData.create("PKCData");
+        t.key = "PKCData";
+        local dateStamp = Calendar.getInstance():getTime();
+        local dateFormat = SimpleDateFormat.new("dd/MM/yyyy HH:mm:ss");
+        t.creationDate = tostring(dateFormat:format(dateStamp) or "N/A");
+    end
+end
+
+local function OnClientCommand(module, command, player, args)
+    
     if module ~= "PKC" then
         return;
     end
 
-    if command == "PlayerHit" then
-        args['player'] = player:getUsername();
-        sendServerCommand("PKC", "PlayerHit", args);
+    if command == "admin" then
+        sendServerCommand("PKC", "getStats", {admin=player:getUsername()});
+    elseif command == "broadcast" then
+        sendServerCommand("PKC", "broadcast", args);
     end
 
 end
 
-local function OnSave()
-    print("LOG_SERVER : PKC: OnSave");
-    local writeData = getModFileWriter("PKC", "PKCdataServer.txt", true, false);
-    writeData:write("Hello World SERVER");
-    writeData:close();
-end
-
-local function OnCharacterDeath(character)
-    if not character:isZombie() then
-        print("-------------------------OnCharacterDeath----------------------------------")
-
-        local victim = character:getUsername();
-
-        if character:getAttackedBy():isZombie() then
-            print("LOG : PKC: " .. victim .. " was killed by a zombie");
-        else
-            local attacker = character:getAttackedBy():getUsername();
-            print("LOG : PKC: " .. victim .. " was killed by " .. attacker);
-            sendServerCommand("PKC", "PlayerDeath", {victim=victim, attacker=attacker});
-        end
-
-    end
-end
-
-local function onPlayerDeath(player)
+local function OnCharacterDeath(player)
     if not player:isZombie() then
         print("-------------------------OnCharacterDeath----------------------------------")
         print("LOG_SERVER : PKC : player " .. tostring(player:getUsername()));
@@ -57,6 +49,6 @@ local function onPlayerDeath(player)
     end
 end
 
-Events.OnPlayerDeath.Add(onPlayerDeath);
+Events.OnInitGlobalModData.Add(PkcModData);
+Events.OnCharacterDeath.Add(OnCharacterDeath);
 Events.OnClientCommand.Add(OnClientCommand);
--- Events.OnCharacterDeath.Add(OnCharacterDeath);

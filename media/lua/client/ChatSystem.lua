@@ -1,6 +1,8 @@
+
+require "Chat/ISChat"
 local ChatSystem = {};
 
-function ChatSystem.addLineToChat(message, color, username, options)
+function ChatSystem.addLineToChat(message, color, username, options,tabId)
     if type(options) ~= "table" then
         options = {
             showTime = false,
@@ -10,7 +12,7 @@ function ChatSystem.addLineToChat(message, color, username, options)
     end
 
     if type(color) ~= "string" then
-        color = "<RGB:1,1,1>";
+        color = "<RGB:181,53,53>";
     end
 
     if options.showTime then
@@ -45,11 +47,20 @@ function ChatSystem.addLineToChat(message, color, username, options)
 		setOverHeadSpeech = function(_)
 			return false
 		end,
+		getTextColor =function (_)
+			return Color(181,53,53)		
+		end,
+		setTextColor = function (_)
+			return Color(181,53,53)		
+		end
 	};
 
 	if not ISChat.instance then return; end;
 	if not ISChat.instance.chatText then return; end;
-	ISChat.addLineInChat(msg, 0);
+	if tabId == nil then
+		tabId = 0;
+	end
+	ISChat.addLineInChat(msg, tabId);
 end
 
 return ChatSystem;
